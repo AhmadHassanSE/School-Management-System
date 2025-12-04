@@ -1,119 +1,96 @@
-const router = require('express').Router();
+const express = require('express');
+const router = express.Router();
 
-// const { adminRegister, adminLogIn, deleteAdmin, getAdminDetail, updateAdmin } = require('../controllers/admin-controller.js');
+// Safe import with fallback
+const safeRequire = (modulePath) => {
+    try {
+        return require(modulePath);
+    } catch (err) {
+        console.log(`Failed to load ${modulePath}:`, err.message);
+        return {};
+    }
+};
 
-const { adminRegister, adminLogIn, getAdminDetail} = require('../controllers/admin-controller.js');
+const adminController = safeRequire('../controllers/admin-controller');
+const studentController = safeRequire('../controllers/student_controller');
+const teacherController = safeRequire('../controllers/teacher-controller');
+const classController = safeRequire('../controllers/class-controller');
+const subjectController = safeRequire('../controllers/subject-controller');
+const noticeController = safeRequire('../controllers/notice-controller');
+const complainController = safeRequire('../controllers/complain-controller');
 
-const { sclassCreate, sclassList, deleteSclass, deleteSclasses, getSclassDetail, getSclassStudents } = require('../controllers/class-controller.js');
-const { complainCreate, complainList } = require('../controllers/complain-controller.js');
-const { noticeCreate, noticeList, deleteNotices, deleteNotice, updateNotice } = require('../controllers/notice-controller.js');
-const {
-    studentRegister,
-    studentLogIn,
-    getStudents,
-    getStudentDetail,
-    deleteStudents,
-    deleteStudent,
-    updateStudent,
-    studentAttendance,
-    deleteStudentsByClass,
-    updateExamResult,
-    clearAllStudentsAttendanceBySubject,
-    clearAllStudentsAttendance,
-    removeStudentAttendanceBySubject,
-    removeStudentAttendance } = require('../controllers/student_controller.js');
-const { subjectCreate, classSubjects, deleteSubjectsByClass, getSubjectDetail, deleteSubject, freeSubjectList, allSubjects, deleteSubjects } = require('../controllers/subject-controller.js');
-const { teacherRegister, teacherLogIn, getTeachers, getTeacherDetail, deleteTeachers, deleteTeachersByClass, deleteTeacher, updateTeacherSubject, teacherAttendance } = require('../controllers/teacher-controller.js');
+// Auth middleware
+let authMiddleware;
+try {
+    authMiddleware = require('../middleware/auth');
+} catch (err) {
+    authMiddleware = (req, res, next) => next();
+}
 
-// Admin
-router.post('/AdminReg', adminRegister);
-router.post('/AdminLogin', adminLogIn);
+// Helper function to handle missing controllers
+const handleRoute = (handler) => {
+    return handler || ((req, res) => res.status(404).json({ message: 'Route not available' }));
+};
 
-router.get("/Admin/:id", getAdminDetail)
-// router.delete("/Admin/:id", deleteAdmin)
+// ==================== ADMIN ROUTES ====================
+router.post('/AdminReg', handleRoute(adminController.adminRegister || adminController.addAdmin));
+router.post('/AdminLogin', handleRoute(adminController.adminLogIn || adminController.login));
+router.get('/Admin/:id', handleRoute(adminController.getAdminDetail));
+router.get('/Admins', authMiddleware, handleRoute(adminController.getAllAdmins));
+router.put('/Admin/:id', authMiddleware, handleRoute(adminController.updateAdmin));
+router.delete('/Admin/:id', authMiddleware, handleRoute(adminController.deleteAdmin));
 
-// router.put("/Admin/:id", updateAdmin)
+// ==================== STUDENT ROUTES ====================
+router.post('/StudentReg', authMiddleware, handleRoute(studentController.addStudent));
+router.get('/Student/:id', authMiddleware, handleRoute(studentController.getStudentDetail));
+router.get('/Students', authMiddleware, handleRoute(studentController.getStudents));
+router.put('/Student/:id', authMiddleware, handleRoute(studentController.updateStudent));
+router.delete('/Student/:id', authMiddleware, handleRoute(studentController.deleteStudent));
+router.put('/UpdateMarks', authMiddleware, handleRoute(studentController.updateMarks));
+router.get('/StudentMarks/:id', authMiddleware, handleRoute(studentController.getStudentMarks));
 
-// Student
+// ==================== TEACHER ROUTES ====================
+router.post('/TeacherReg', authMiddleware, handleRoute(teacherController.addTeacher || teacherController.addTeachers));
+router.get('/Teacher/:id', authMiddleware, handleRoute(teacherController.getTeacherDetail));
+router.get('/Teachers', authMiddleware, handleRoute(teacherController.getTeachers));
+router.put('/Teacher/:id', authMiddleware, handleRoute(teacherController.updateTeacher));
+router.delete('/DeleteTeacher/:id', authMiddleware, handleRoute(teacherController.deleteTeacher));
 
-router.post('/StudentReg', studentRegister);
-router.post('/StudentLogin', studentLogIn)
+// ==================== CLASS ROUTES ====================
+router.post('/ClassAdd', authMiddleware, handleRoute(classController.addClass || classController.addSclass));
+router.get('/Class/:id', authMiddleware, handleRoute(classController.getClassDetail));
+router.get('/Classes', authMiddleware, handleRoute(classController.getClasses));
+router.put('/Class/:id', authMiddleware, handleRoute(classController.updateClass));
+router.delete('/Class/:id', authMiddleware, handleRoute(classController.deleteClass));
 
-router.get("/Students/:id", getStudents)
-router.get("/Student/:id", getStudentDetail)
+// ==================== SUBJECT ROUTES ====================
+router.post('/SubjectAdd', authMiddleware, handleRoute(subjectController.addSubject));
+router.get('/Subject/:id', authMiddleware, handleRoute(subjectController.getSubjectDetail));
+router.get('/Subjects', authMiddleware, handleRoute(subjectController.getSubjects));
+router.put('/Subject/:id', authMiddleware, handleRoute(subjectController.updateSubject));
+router.delete('/Subject/:id', authMiddleware, handleRoute(subjectController.deleteSubject));
 
-router.delete("/Students/:id", deleteStudents)
-router.delete("/StudentsClass/:id", deleteStudentsByClass)
-router.delete("/Student/:id", deleteStudent)
+// ==================== ATTENDANCE ROUTES ====================
+router.get('/Attendance', authMiddleware, handleRoute(studentController.getAttendance));
+router.get('/StudentAttendance/:id', authMiddleware, handleRoute(studentController.getStudentAttendance));
+router.get('/ClassAttendance/:id', authMiddleware, handleRoute(studentController.getClassAttendance));
+router.get('/AttendanceByDate', authMiddleware, handleRoute(studentController.getAttendanceByDate));
 
-router.put("/Student/:id", updateStudent)
+// ==================== NOTICE ROUTES ====================
+router.post('/NoticeAdd', authMiddleware, handleRoute(noticeController.addNotice));
+router.get('/Notices', authMiddleware, handleRoute(noticeController.getNotices));
 
-router.put('/UpdateExamResult/:id', updateExamResult)
+// ==================== COMPLAINT ROUTES ====================
+router.post('/ComplainAdd', authMiddleware, handleRoute(complainController.addComplain));
+router.get('/Complains', authMiddleware, handleRoute(complainController.getComplains));
 
-router.put('/StudentAttendance/:id', studentAttendance)
+// ==================== ADMIN DASHBOARD ROUTES ====================
+router.get('/AdminDashboard', authMiddleware, handleRoute(adminController.getDashboard));
+router.get('/ManageUsers', authMiddleware, handleRoute(adminController.manageUsers));
 
-router.put('/RemoveAllStudentsSubAtten/:id', clearAllStudentsAttendanceBySubject);
-router.put('/RemoveAllStudentsAtten/:id', clearAllStudentsAttendance);
-
-router.put('/RemoveStudentSubAtten/:id', removeStudentAttendanceBySubject);
-router.put('/RemoveStudentAtten/:id', removeStudentAttendance)
-
-// Teacher
-
-router.post('/TeacherReg', teacherRegister);
-router.post('/TeacherLogin', teacherLogIn)
-
-router.get("/Teachers/:id", getTeachers)
-router.get("/Teacher/:id", getTeacherDetail)
-
-router.delete("/Teachers/:id", deleteTeachers)
-router.delete("/TeachersClass/:id", deleteTeachersByClass)
-router.delete("/Teacher/:id", deleteTeacher)
-
-router.put("/TeacherSubject", updateTeacherSubject)
-
-router.post('/TeacherAttendance/:id', teacherAttendance)
-
-// Notice
-
-router.post('/NoticeCreate', noticeCreate);
-
-router.get('/NoticeList/:id', noticeList);
-
-router.delete("/Notices/:id", deleteNotices)
-router.delete("/Notice/:id", deleteNotice)
-
-router.put("/Notice/:id", updateNotice)
-
-// Complain
-
-router.post('/ComplainCreate', complainCreate);
-
-router.get('/ComplainList/:id', complainList);
-
-// Sclass
-
-router.post('/SclassCreate', sclassCreate);
-
-router.get('/SclassList/:id', sclassList);
-router.get("/Sclass/:id", getSclassDetail)
-
-router.get("/Sclass/Students/:id", getSclassStudents)
-
-router.delete("/Sclasses/:id", deleteSclasses)
-router.delete("/Sclass/:id", deleteSclass)
-
-// Subject
-
-router.post('/SubjectCreate', subjectCreate);
-
-router.get('/AllSubjects/:id', allSubjects);
-router.get('/ClassSubjects/:id', classSubjects);
-router.get('/FreeSubjectList/:id', freeSubjectList);
-router.get("/Subject/:id", getSubjectDetail)
-
-router.delete("/Subject/:id", deleteSubject)
-router.delete("/Subjects/:id", deleteSubjects)
-router.delete("/SubjectsClass/:id", deleteSubjectsByClass)
+// Catch all undefined routes
+router.use((req, res) => {
+    res.status(404).json({ message: 'Route not found' });
+});
 
 module.exports = router;

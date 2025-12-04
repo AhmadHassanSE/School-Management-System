@@ -54,7 +54,16 @@ const studentSchema = new mongoose.Schema({
             ref: 'subject',
             required: true
         }
-    }]
-});
+    }],
+    marks: [
+            {
+                subject: mongoose.Schema.Types.ObjectId,
+                examType: String, // e.g., 'Midterm', 'Final', 'Quiz'
+                marksObtained: Number,
+                totalMarks: { type: Number, default: 100 },
+                date: Date
+            }
+        ]
+}, { timestamps: true });
 
 module.exports = mongoose.model("student", studentSchema);

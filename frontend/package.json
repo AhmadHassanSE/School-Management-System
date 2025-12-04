@@ -25,7 +25,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "jest",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -47,6 +47,11 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "jest": "^27.5.1",
+    "jest-environment-jsdom": "^30.2.0",
     "webpack": "^5.81.0"
   }
 }

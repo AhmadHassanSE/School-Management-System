@@ -103,19 +103,25 @@ const updateTeacherSubject = async (req, res) => {
 
 const deleteTeacher = async (req, res) => {
     try {
-        const deletedTeacher = await Teacher.findByIdAndDelete(req.params.id);
+        const { id } = req.params;
 
-        await Subject.updateOne(
-            { teacher: deletedTeacher._id, teacher: { $exists: true } },
-            { $unset: { teacher: 1 } }
-        );
+        // Validate MongoDB ID format
+        if (!id || !require('mongoose').Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid teacher ID' });
+        }
 
-        res.send(deletedTeacher);
+        const teacher = await require('../models/teacherSchema').findByIdAndDelete(id);
+
+        if (!teacher) {
+            return res.status(404).json({ message: 'Teacher not found' });
+        }
+
+        res.status(200).json({ message: 'Teacher deleted successfully', _id: id });
     } catch (error) {
-        res.status(500).json(error);
+        console.error('Delete teacher error:', error);
+        res.status(500).json({ message: 'Error deleting teacher', error: error.message });
     }
 };
-
 const deleteTeachers = async (req, res) => {
     try {
         const deletionResult = await Teacher.deleteMany({ school: req.params.id });
