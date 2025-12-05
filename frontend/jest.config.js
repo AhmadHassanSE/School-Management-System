@@ -1,5 +1,5 @@
 module.exports = {
-  preset: 'react-native',
+  // Web app: use jsdom test environment and default Jest transform via babel-jest
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/setupTests.js'],
   moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx', 'json', 'node'],
