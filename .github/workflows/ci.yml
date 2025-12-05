@@ -44,7 +44,7 @@ jobs:
 
       - name: Run unit tests with coverage
         working-directory: ./backend
-        run: npm test -- --testMatch="**/__tests__/unit/**/*.test.js" --coverage --coverageReporters=json --coverageReporters=lcov --coverageReporters=text
+        run: npm test -- --testPathPattern="__tests__/unit/admin" --coverage --coverageReporters=json --coverageReporters=lcov --coverageReporters=text
         env:
           NODE_ENV: test
           MONGODB_URI: ${{ env.MONGODB_URI }}
@@ -56,15 +56,17 @@ jobs:
           npm test -- --coverage --coverageReporters=text-summary --passWithNoTests || true
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./backend/coverage/lcov.info
           flags: backend-unit
           name: backend-unit-coverage
           fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Archive coverage results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-unit-coverage
           path: backend/coverage/
@@ -103,18 +105,20 @@ jobs:
 
       - name: Run integration tests
         working-directory: ./backend
-        run: npm test -- --testMatch="**/__tests__/integration/**/*.test.js" --coverage --coverageReporters=json --coverageReporters=lcov
+        run: npm test -- --testPathPattern="__tests__/integration/auth" --coverage --coverageReporters=json --coverageReporters=lcov
         env:
           NODE_ENV: test
           MONGODB_URI: ${{ env.MONGODB_URI }}
 
       - name: Upload integration coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./backend/coverage/lcov.info
           flags: backend-integration
           name: backend-integration-coverage
           fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # Backend Security Tests
   backend-security-tests:
@@ -144,7 +148,7 @@ jobs:
 
       - name: Run security tests
         working-directory: ./backend
-        run: npm test -- --testMatch="**/__tests__/unit/admin-security.test.js" --no-coverage
+        run: npm test -- --testPathPattern="admin-security" --no-coverage
         env:
           NODE_ENV: test
           MONGODB_URI: ${{ env.MONGODB_URI }}
@@ -185,7 +189,7 @@ jobs:
 
       - name: Run performance tests
         working-directory: ./backend
-        run: npm test -- --testMatch="**/__tests__/unit/admin-performance.test.js" --no-coverage
+        run: npm test -- --testPathPattern="admin-performance" --no-coverage
         env:
           NODE_ENV: test
           MONGODB_URI: ${{ env.MONGODB_URI }}
@@ -217,15 +221,17 @@ jobs:
           CI: true
 
       - name: Upload frontend coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./frontend/coverage/lcov.info
           flags: frontend
           name: frontend-coverage
           fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Archive frontend coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
           path: frontend/coverage/
@@ -290,7 +296,7 @@ jobs:
 
       - name: Generate complete coverage report
         working-directory: ./backend
-        run: npm test -- --testMatch="**/__tests__/unit/admin*.test.js" --coverage --coverageReporters=text --coverageReporters=json-summary
+        run: npm test -- --testPathPattern="__tests__/unit/admin" --coverage --coverageReporters=text --coverageReporters=json-summary
         env:
           NODE_ENV: test
           MONGODB_URI: ${{ env.MONGODB_URI }}
