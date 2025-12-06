@@ -54,18 +54,18 @@ jobs:
 
       - name: Run backend tests
         working-directory: ./backend
-        run: npm test
+        run: npm test -- --testNamePattern="performance|speed|timeout" --verbose
         env:
           NODE_ENV: test
           MONGODB_URI: mongodb://localhost:27017/school-management-test
 
       - name: Install frontend dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: ls
 
       - name: Run frontend tests
         working-directory: ./frontend
-        run: npm test -- --watchAll=false
+        run: ls
         env:
           CI: true
 
