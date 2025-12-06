@@ -43,7 +43,7 @@ jobs:
 
       - name: Run all backend tests
         working-directory: ./backend
-        run: Run npm test -- --testPathPatterns="__tests__/unit/admin" --coverage --coverageReporters=json --coverageReporters=lcov --coverageReporters=text
+        run: npm test -- --testPathPatterns="__tests__/unit/admin" --coverage --coverageReporters=json --coverageReporters=lcov --coverageReporters=text
         env:
           NODE_ENV: test
           MONGODB_URI: mongodb://localhost:27017/school-management-test
